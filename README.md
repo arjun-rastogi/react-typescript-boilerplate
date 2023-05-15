@@ -1,1 +1,1 @@
-# react_typescript_boilerplate
+# idt_worldwide
