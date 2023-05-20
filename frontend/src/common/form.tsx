@@ -1,12 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Joi from "joi-browser";
 import Select from "./select";
 import Input from "./input";
 import TextArea from "./textArea";
 import InputArea from "./inputArea";
+import MultipleSelect from "./multipleSelect";
 
 interface Schema {
   [key: string]: string;
+}
+
+interface Option {
+  id: number;
+  name: string;
 }
 
 interface Props<T> {
@@ -20,12 +26,12 @@ interface Props<T> {
   onSubmit: () => void;
 }
 
-interface FormData {
-  [key: string]: string;
-}
-
 interface Errors {
   [key: string]: string | undefined;
+}
+
+interface FormData {
+  [key: string]: any;
 }
 
 const Form = <T extends FormData>({
@@ -38,6 +44,8 @@ const Form = <T extends FormData>({
   setBase64Image,
   onSubmit,
 }: Props<T>) => {
+  const [selectedOptions, setSelectedOptions] = useState<Option[]>([]);
+
   const renderFile = (
     name: string,
     label: string,
@@ -89,6 +97,34 @@ const Form = <T extends FormData>({
     );
   };
 
+  const renderMultipleSelect = (
+    name: string,
+    label: string,
+    options: Array<any>
+  ): JSX.Element => {
+    return (
+      <MultipleSelect
+        selectedOptions={selectedOptions}
+        setSelectedOptions={setSelectedOptions}
+        name={name}
+        value={data[name]}
+        label={label}
+        options={options}
+        error={errors[name]}
+        onChange={handleMultipleSelectChange}
+      />
+    );
+  };
+
+  const handleMultipleSelectChange = (
+    name: string,
+    selectedOptions: Option[]
+  ) => {
+    if (selectedOptions) {
+      handleMultipleEditorChange(selectedOptions, name);
+    }
+  };
+
   const renderSelect = (
     name: string,
     label: string,
@@ -117,7 +153,7 @@ const Form = <T extends FormData>({
         value={data[name]}
         label={label}
         error={errors[name]}
-        onChange={(value) => handleJoditEditorChange(value, name)} // Corrected the parameter passing
+        onChange={(value) => handleMultipleEditorChange(value, name)} // Corrected the parameter passing
       />
     );
   };
@@ -154,7 +190,6 @@ const Form = <T extends FormData>({
     input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
   ): void => {
     const newErrors = { ...errors };
-    console.log("input", input);
 
     const errorMessage = validateProperty(input);
     if (errorMessage) {
@@ -182,12 +217,12 @@ const Form = <T extends FormData>({
     );
   };
 
-  const handleJoditEditorChange = (value: string, name: string): void => {
+  const handleMultipleEditorChange = (value: any, name: string): void => {
     const syntheticEvent = {
       currentTarget: {
         value,
         name,
-      } as HTMLTextAreaElement,
+      } as HTMLSelectElement | HTMLInputElement,
     };
     handleInputChange(syntheticEvent.currentTarget);
   };
@@ -232,10 +267,11 @@ const Form = <T extends FormData>({
 
   return {
     renderButton,
-    renderSelect,
     renderInput,
-    renderTextarea,
     renderInputArea,
+    renderMultipleSelect,
+    renderSelect,
+    renderTextarea,
     renderFile,
     handleSubmit,
   };

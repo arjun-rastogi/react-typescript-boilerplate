@@ -11,7 +11,7 @@ type Props = {
 function Table({ columns, data }: Props) {
   return (
     <div className="table-responsive">
-      <table className="table table-striped table-bordered table-hover">
+      <table className="table">
         <TableHeader columns={columns} />
         <TableBody columns={columns} data={data} />
       </table>
